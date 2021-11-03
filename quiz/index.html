@@ -88,16 +88,6 @@
                     );
                     arcCamera.attachControl(canvas, true);
 
-                    var followCam = new BABYLON.ArcRotateCamera(
-                        "followCam",
-                        BABYLON.Tools.ToRadians(0),
-                        BABYLON.Tools.ToRadians(90),
-                        5.0,       // Radius
-                        new BABYLON.Vector3(-2.2, 2.6, 0.5),
-                        scene
-                    );
-                    followCam.attachControl(canvas, true);
-
                     var light = new BABYLON.PointLight(
                         "pointLight",
                         new BABYLON.Vector3(0, 20, 0),
