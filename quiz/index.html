@@ -22,6 +22,9 @@
     <body>
         <canvas id="render" touch-action="none">
             <script>
+                var isMoving = false;
+                var carMeshes;
+
                 var canvas = document.getElementById("render");
                 var engine = new BABYLON.Engine(canvas, true);
                 var createScene = function() {
@@ -34,9 +37,25 @@
                         "copy-of-lamborghini-aventador.obj",
                         scene,
                         function(newMeshes) {
+                            carMeshes = newMeshes;
                             for (mesh in newMeshes) {
-                                newMeshes[mesh].scaling = new BABYLON.Vector3(1.5, 1.5, 1.5);
-                                newMeshes[mesh].position = new BABYLON.Vector3(2,1,0);
+                                const temp = newMeshes[mesh];
+                                temp.scaling = new BABYLON.Vector3(1.5, 1.5, 1.5);
+                                temp.position = new BABYLON.Vector3(2,1,0);
+
+                                temp.actionManager = new BABYLON.ActionManager(scene);
+                                temp.actionManager.registerAction(new BABYLON.ExecuteCodeAction(
+                                    BABYLON.ActionManager.OnPickTrigger,
+                                    function (evt) {
+                                        // const source = evt.meshUnderPointer;
+                                        isMoving = true;
+                                        var camera = scene.getCameraByName("arcCamera");
+                                        // camera.alpha = BABYLON.Tools.ToRadians(0);
+                                        // camera.beta = BABYLON.Tools.ToRadians(90);
+                                        // camera.radius = 5.0;
+                                        camera.setPosition(new BABYLON.Vector3(2.1, 2.6, 0.5));
+                                    }
+                                ));
                             }
                         }
                     );
@@ -57,30 +76,63 @@
 
                     var box1 = BABYLON.Mesh.CreateBox("Box", 1.0, scene);
                     box1.scaling = new BABYLON.Vector3(100,1,40)
-                    box1.position = new BABYLON.Vector3(-40, 0.5, 0);
+                    box1.position = new BABYLON.Vector3(-40, 0.5, 0)
 
-                    var camera = new BABYLON.ArcRotateCamera(
+                    var arcCamera = new BABYLON.ArcRotateCamera(
                         "arcCamera",
-                        BABYLON.Tools.ToRadians(0),
-                        BABYLON.Tools.ToRadians(0),
-                        10.0,       // Radius
+                        BABYLON.Tools.ToRadians(40),
+                        BABYLON.Tools.ToRadians(60),
+                        70.0,       // Radius
                         BABYLON.Vector3.Zero(),
                         scene
                     );
-                    camera.attachControl(canvas, true);
+                    arcCamera.attachControl(canvas, true);
+
+                    var followCam = new BABYLON.ArcRotateCamera(
+                        "followCam",
+                        BABYLON.Tools.ToRadians(0),
+                        BABYLON.Tools.ToRadians(90),
+                        5.0,       // Radius
+                        new BABYLON.Vector3(-2.2, 2.6, 0.5),
+                        scene
+                    );
+                    followCam.attachControl(canvas, true);
 
                     var light = new BABYLON.PointLight(
                         "pointLight",
-                        new BABYLON.Vector3(0, -50, 0),
+                        new BABYLON.Vector3(0, 20, 0),
                         scene
                     );
-                    light.parent = camera;
+                    light.parent = arcCamera;
                     light.intensity = 1.5;
                     
                     return scene;
                 }
                 var scene = createScene();
+                var curMovements = 0;
+                var maxMovements = 120;
                 engine.runRenderLoop(function() {
+
+                    if (isMoving) {
+                        var camera = scene.getCameraByName("arcCamera");
+                        if (curMovements < maxMovements) {
+                            curMovements++;
+                            var pos = camera.position;
+                            camera.setTarget(new BABYLON.Vector3(pos.x-1, pos.y, pos.z));
+                            camera.setPosition(new BABYLON.Vector3(pos.x-0.5, pos.y, pos.z));
+                            if (isMoving) {
+                                for (temp in carMeshes) {
+                                    carMeshes[temp].position.x -= 0.5;
+                                }
+                            }
+                        } else {
+                            isMoving = false;
+                            camera.radius = 15;
+                            camera.alpha = BABYLON.Tools.ToRadians(10);
+                            camera.beta = BABYLON.Tools.ToRadians(45);
+                        }
+                    }
+
                     scene.render();
                 });
                 window.addEventListener("resize", function() {
