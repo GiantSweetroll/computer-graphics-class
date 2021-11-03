@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>CG - Babylon</title>
+        <script src="https://cdn.babylonjs.com/babylon.js"></script>
+        <script src="https://cdn.babylonjs.com/loaders/babylonjs.loaders.min.js"></script>
+        <style>
+            html, body {
+                overflow: hidden;
+                width: 100%;
+                height: 100%;
+                margin: 0;
+                padding: 0;
+            }
+            #render {
+                width: 100%;
+                height: 100%;
+                touch-action: none;
+            }
+        </style>
+    </head>
+    <body>
+        <canvas id="render" touch-action="none">
+            <script>
+                var canvas = document.getElementById("render");
+                var engine = new BABYLON.Engine(canvas, true);
+                var createScene = function() {
+                    var scene = new BABYLON.Scene(engine);
+                    engine.enableOfflineSupport = false;
+
+                    var car = BABYLON.SceneLoader.ImportMesh(
+                        "", 
+                        "", 
+                        "copy-of-lamborghini-aventador.obj",
+                        scene,
+                        function(newMeshes) {
+                            for (mesh in newMeshes) {
+                                newMeshes[mesh].scaling = new BABYLON.Vector3(1.5, 1.5, 1.5);
+                                newMeshes[mesh].position = new BABYLON.Vector3(2,1,0);
+                            }
+                        }
+                    );
+
+                    var house = BABYLON.SceneLoader.ImportMesh(
+                        "", 
+                        "", 
+                        "house.obj",
+                        scene,
+                        function(newMeshes) {
+                            for (mesh in newMeshes) {
+                                newMeshes[mesh].scaling = new BABYLON.Vector3(0.05, 0.05, 0.05);
+                                newMeshes[mesh].rotation.y = BABYLON.Tools.ToRadians(-90),
+                                newMeshes[mesh].position = new BABYLON.Vector3(-80,1,0);
+                            }
+                        }
+                    );
+
+                    var box1 = BABYLON.Mesh.CreateBox("Box", 1.0, scene);
+                    box1.scaling = new BABYLON.Vector3(100,1,40)
+                    box1.position = new BABYLON.Vector3(-40, 0.5, 0);
+
+                    var camera = new BABYLON.ArcRotateCamera(
+                        "arcCamera",
+                        BABYLON.Tools.ToRadians(0),
+                        BABYLON.Tools.ToRadians(0),
+                        10.0,       // Radius
+                        BABYLON.Vector3.Zero(),
+                        scene
+                    );
+                    camera.attachControl(canvas, true);
+
+                    var light = new BABYLON.PointLight(
+                        "pointLight",
+                        new BABYLON.Vector3(0, -50, 0),
+                        scene
+                    );
+                    light.parent = camera;
+                    light.intensity = 1.5;
+                    
+                    return scene;
+                }
+                var scene = createScene();
+                engine.runRenderLoop(function() {
+                    scene.render();
+                });
+                window.addEventListener("resize", function() {
+                    engine.resize();
+                });
+            </script>
+        </canvas>
+    </body>
+</html>
