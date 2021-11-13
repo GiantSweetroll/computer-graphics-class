@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>CG - Babylon</title>
+        <script src="https://cdn.babylonjs.com/babylon.js"></script>
+        <script src="https://cdn.babylonjs.com/loaders/babylonjs.loaders.min.js"></script>
+        <style>
+            html, body {
+                overflow: hidden;
+                width: 100%;
+                height: 100%;
+                margin: 0;
+                padding: 0;
+            }
+            #render {
+                width: 100%;
+                height: 100%;
+                touch-action: none;
+            }
+        </style>
+    </head>
+    <body>
+        <canvas id="render" touch-action="none">
+            <script>
+
+                var houseMeshes;
+
+                var canvas = document.getElementById("render");
+                var engine = new BABYLON.Engine(canvas, true);
+                var createScene = function() {
+                    var scene = new BABYLON.Scene(engine);
+                    engine.enableOfflineSupport = false;
+
+                    var house = BABYLON.SceneLoader.ImportMesh(
+                        "", 
+                        "", 
+                        "house.obj",
+                        scene,
+                        function(newMeshes) {
+                            houseMeshes = newMeshes;
+
+                            for (mesh in newMeshes) {
+                                newMeshes[mesh].scaling = new BABYLON.Vector3(0.05, 0.05, 0.05);
+                                newMeshes[mesh].rotation.y = BABYLON.Tools.ToRadians(-90),
+                                newMeshes[mesh].position = new BABYLON.Vector3(0,1,0);
+                            }
+                        }
+                    );
+
+                    var arcCamera = new BABYLON.ArcRotateCamera(
+                        "arcCamera",
+                        BABYLON.Tools.ToRadians(40),
+                        BABYLON.Tools.ToRadians(60),
+                        70.0,       // Radius
+                        BABYLON.Vector3.Zero(),
+                        scene
+                    );
+                    arcCamera.attachControl(canvas, true);
+
+                    var light = new BABYLON.PointLight(
+                        "pointLight",
+                        new BABYLON.Vector3(0, 20, 0),
+                        scene
+                    );
+                    light.parent = arcCamera;
+                    light.intensity = 1.5;
+                    
+                    return scene;
+                }
+                var scene = createScene();
+                var reverse = false;
+                var scaleIncrement = 0.0005
+                engine.runRenderLoop(function() {
+                    for (temp in houseMeshes) {
+                        var mesh = houseMeshes[temp];
+
+                        mesh.rotation.y += 0.01;
+
+                        if (!reverse) {
+                            console.log(mesh.position.x);
+                            if (mesh.position.x > -50) {
+                                mesh.position.x -= 0.5;
+                                mesh.scaling = new BABYLON.Vector3(
+                                    mesh.scaling.x + scaleIncrement, 
+                                    mesh.scaling.y + scaleIncrement, 
+                                    mesh.scaling.z + scaleIncrement
+                                );
+                            } else {
+                                reverse = true;
+                            }
+                        } else {
+                            if (mesh.position.x < 50) {
+                                mesh.position.x += 0.5;
+                                mesh.scaling = new BABYLON.Vector3(
+                                    mesh.scaling.x - scaleIncrement, 
+                                    mesh.scaling.y - scaleIncrement, 
+                                    mesh.scaling.z - scaleIncrement
+                                );
+                            } else {
+                                reverse = false;
+                            }
+                        }
+                    }
+
+                    scene.render();
+                });
+                window.addEventListener("resize", function() {
+                    engine.resize();
+                });
+            </script>
+        </canvas>
+    </body>
+</html>
