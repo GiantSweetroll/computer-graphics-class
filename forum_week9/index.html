@@ -31,6 +31,12 @@
                     var scene = new BABYLON.Scene(engine);
                     engine.enableOfflineSupport = false;
 
+                    var woodMaterial = new BABYLON.StandardMaterial('woodMat', scene);
+                    woodMaterial.diffuseTexture = new BABYLON.Texture("wood.jpg", scene);
+
+                    var woodMaterial2 = new BABYLON.StandardMaterial("material", scene);
+	                woodMaterial2.diffuseTexture = new BABYLON.Texture("wood2.jpg", scene);
+
                     var house = BABYLON.SceneLoader.ImportMesh(
                         "", 
                         "", 
@@ -43,6 +49,7 @@
                                 newMeshes[mesh].scaling = new BABYLON.Vector3(0.05, 0.05, 0.05);
                                 newMeshes[mesh].rotation.y = BABYLON.Tools.ToRadians(-90),
                                 newMeshes[mesh].position = new BABYLON.Vector3(0,1,0);
+                                newMeshes[mesh].material = woodMaterial2;
                             }
                         }
                     );

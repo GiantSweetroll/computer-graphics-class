@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>CG - Babylon</title>
+        <script src="https://cdn.babylonjs.com/babylon.js"></script>
+        <script src="https://preview.babylonjs.com/loaders/babylonjs.loaders.min.js"></script>
+        <script src="https://code.jquery.com/pep/0.4.3/pep.js"></script>
+        <style>
+            html, body {
+                overflow: hidden;
+                width: 100%;
+                height: 100%;
+                margin: 0;
+                padding: 0;
+            }
+            #render {
+                width: 100%;
+                height: 100%;
+                touch-action: none;
+            }
+        </style>
+    </head>
+    <body>
+        <canvas id="render" touch-action="none">
+            <script type="application/vertexShader" id="vertexShaderCode">
+                #ifdef GL_ES
+                    precision highp float;
+                #endif
+
+                attirbute vec3 position;
+                attribute vec2 uv;
+                
+                uniform mat4 worldViewProjection;
+            
+                varying vec2 vUV;
+
+                void main(void) {
+                    gl_Position = worldViewProjection * vec4(position, 1.0);
+                    vUV = uv;
+                }
+            </script>
+            <script type="application/fragmentShader" id="fragmentShaderCode">
+                #ifdef GL_ES
+                    precision mediump float;
+                #endif
+
+                varying vec2 vUV;
+
+                uniform sampler2D textureSampler;
+
+                void main(void) {
+                    gl_FragColor = texture2D(textureSampler, vUV);
+                }
+            </script>
+            <script>
+                var canvas = document.getElementById("render");
+                var engine = new BABYLON.Engine(canvas, true);
+                var createScene = function() {
+                    var scene = new BABYLON.Scene(engine);
+                    var torus = BABYLON.MeshBuilder.CreateTorusKnot("tk", {}, scene);
+                    var camera = new BABYLON.ArcRotateCamera("Camera", 0, Math.PI / 2, 10, BABYLON.Vector3.Zero(), scene);
+                    camera.attachControl(canvas, true);
+
+                    var shaderMaterial = new BABYLON.ShaderMaterial(
+                        "shader",
+                        scene,
+                        {
+                            vertexElement: "vertexShaderCode",
+                            fragmentElement: "fragmentShaderCode"
+                        },
+                        {
+                            attributes: ["positions", "normal", "uv"],
+                            uniforms: ["world", "worldView", "worldViewProjection", "view", "projection"],
+                        }
+                    );
+
+                    var mainTexture = new BABYLON.Texture("sample.jpg", scene);
+                    shaderMaterial.setTexture("textureSampler", mainTexture);
+
+                    torus.material = shaderMaterial;
+
+                    var light1 = new BABYLON.HemisphericLight("light1", new BABYLON.Vector3(1, 1, 0), scene);
+                    return scene;
+                }
+                var scene = createScene();
+                engine.runRenderLoop(function() {
+                    var shaderMaterial = scene.getMaterialByName("shader");
+                    shaderMaterial.setFloat("time", time);
+                    time += 0.02;
+                    shaderMAterial.setVector3("cameraPosition", scene.activeCamera.position);
+                    scene.render();
+                });
+                window.addEventListener("resize", function() {
+                    engine.resize();
+                });
+            </script>
+        </canvas>
+    </body>
+</html>
