@@ -85,8 +85,8 @@
                 var scene = createScene();
                 engine.runRenderLoop(function() {
                     var shaderMaterial = scene.getMaterialByName("shader");
-                    shaderMaterial.setFloat("time", time);
-                    time += 0.02;
+                    // shaderMaterial.setFloat("time", time);
+                    // time += 0.02;
                     shaderMAterial.setVector3("cameraPosition", scene.activeCamera.position);
                     scene.render();
                 });
